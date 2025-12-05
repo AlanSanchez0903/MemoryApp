@@ -168,9 +168,7 @@ function checkMatch() {
     if (card1.dataset.icon === card2.dataset.icon) {
         card1.classList.add('matched');
         card2.classList.add('matched');
-        if (window.soundManager) {
-            waitForFlipAnimation([card1, card2]).then(() => soundManager.play('match'));
-        }
+        if (window.soundManager) soundManager.play('match');
         cpuMemory.delete(card1.dataset.icon);
         matchedPairs++;
         flippedCards = [];
