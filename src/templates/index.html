@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Match</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <div class="container">
+        <!-- Mode Selection Menu -->
+        <div id="mode-menu" class="screen active">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="logo">
+            <h1>Memory Match</h1>
+            <p>Select Game Mode</p>
+            <div class="mode-buttons">
+                <button onclick="selectMode(1)">Solo (Time Trial)</button>
+                <button onclick="selectMode(2)">2 Players (Turn based)</button>
+                <button onclick="selectMode(3)">Vs CPU</button>
+            </div>
+        </div>
+
+        <!-- Difficulty Menu -->
+        <div id="difficulty-menu" class="screen hidden">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="logo">
+            <h1>Memory Match</h1>
+            <p>Select Difficulty</p>
+            <div class="difficulty-buttons">
+                <button onclick="startGame(12)">Easy (12 Cards)</button>
+                <button onclick="startGame(18)">Medium (18 Cards)</button>
+                <button onclick="startGame(24)">Hard (24 Cards)</button>
+                <button onclick="showModeMenu()" class="back-btn"
+                    style="margin-top: 20px; background-color: #333; color: white;">Back to Modes</button>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game" class="screen hidden">
+            <div class="header">
+                <button onclick="showMenu()" class="back-btn">Back</button>
+                <div class="timer">Time: <span id="time">00:00</span></div>
+            </div>
+
+            <div class="game-board" id="board">
+                <!-- Cards will be injected here -->
+            </div>
+
+            <div id="game-over" class="modal hidden">
+                <div class="modal-content">
+                    <h2>You Won!</h2>
+                    <p>Time: <span id="final-time"></span></p>
+                    <button onclick="showMenu()">Play Again</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+
+</html>
