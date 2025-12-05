@@ -18,6 +18,26 @@ let currentDifficulty = 'easy';
 
 let cpuMemory = new Map();
 let cpuActive = false;
+const FLIP_ANIMATION_MS = 500;
+
+function waitForFlipAnimation(cards, timeout = FLIP_ANIMATION_MS) {
+    return new Promise((resolve) => {
+        let remaining = cards.length;
+        const fallback = setTimeout(resolve, timeout + 50);
+
+        const handleEnd = (event) => {
+            if (event.propertyName !== 'transform') return;
+            event.target.removeEventListener('transitionend', handleEnd);
+            remaining -= 1;
+            if (remaining === 0) {
+                clearTimeout(fallback);
+                resolve();
+            }
+        };
+
+        cards.forEach((card) => card.addEventListener('transitionend', handleEnd));
+    });
+}
 
 function attachButtonPressEffect(selector) {
     const buttons = document.querySelectorAll(selector);

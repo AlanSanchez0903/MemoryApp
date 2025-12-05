@@ -96,8 +96,9 @@ button:focus-visible {
 .header {
     width: 100%;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
     margin-bottom: 20px;
 }
 
@@ -107,9 +108,22 @@ button:focus-visible {
     font-size: 1rem;
 }
 
+.controls-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
 .timer {
     font-size: 1.5rem;
     font-weight: bold;
+}
+
+.status-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
 }
 
 .scoreboard {

@@ -43,13 +43,17 @@
         <!-- Game Screen -->
         <div id="game" class="screen hidden">
             <div class="header">
-                <button onclick="showMenu()" class="back-btn">Atrás</button>
-                <div id="timer-container" class="timer">Tiempo: <span id="time">00:00</span></div>
-                <div id="scoreboard" class="scoreboard hidden">
-                    <div id="p1-box" class="player-box active-turn"><span id="p1-label">J1</span>: <span
-                            id="p1-score">0</span></div>
-                    <div id="p2-box" class="player-box"><span id="p2-label">J2</span>: <span
-                            id="p2-score">0</span></div>
+                <div class="controls-row">
+                    <button onclick="showMenu()" class="back-btn">Atrás</button>
+                </div>
+                <div class="status-row">
+                    <div id="timer-container" class="timer">Tiempo: <span id="time">00:00</span></div>
+                    <div id="scoreboard" class="scoreboard hidden">
+                        <div id="p1-box" class="player-box active-turn"><span id="p1-label">J1</span>: <span
+                                id="p1-score">0</span></div>
+                        <div id="p2-box" class="player-box"><span id="p2-label">J2</span>: <span
+                                id="p2-score">0</span></div>
+                    </div>
                 </div>
             </div>
 
