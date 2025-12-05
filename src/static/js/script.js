@@ -18,6 +18,7 @@ let currentDifficulty = 'easy';
 
 let cpuMemory = new Map();
 let cpuActive = false;
+const FLIP_ANIMATION_MS = 500;
 
 function attachButtonPressEffect(selector) {
     const buttons = document.querySelectorAll(selector);
@@ -27,6 +28,7 @@ function attachButtonPressEffect(selector) {
         const handleKeyDown = (event) => {
             if (event.code === 'Space' || event.code === 'Enter') {
                 button.classList.add('button-press');
+                if (window.soundManager) soundManager.play('button');
             }
         };
 
@@ -38,6 +40,7 @@ function attachButtonPressEffect(selector) {
 
         button.addEventListener('pointerdown', () => {
             button.classList.add('button-press');
+            if (window.soundManager) soundManager.play('button');
         });
 
         button.addEventListener('pointerup', removePress);
@@ -130,6 +133,7 @@ function flipCard(card) {
     if (currentMode === 3 && currentPlayer === 2 && !cpuActive) return;
 
     card.classList.add('flipped');
+    if (window.soundManager) soundManager.play('flip');
     flippedCards.push(card);
     rememberCard(card);
 
@@ -145,6 +149,9 @@ function checkMatch() {
     if (card1.dataset.icon === card2.dataset.icon) {
         card1.classList.add('matched');
         card2.classList.add('matched');
+        if (window.soundManager) {
+            setTimeout(() => soundManager.play('match'), FLIP_ANIMATION_MS);
+        }
         cpuMemory.delete(card1.dataset.icon);
         matchedPairs++;
         flippedCards = [];
@@ -352,4 +359,30 @@ document.addEventListener('DOMContentLoaded', () => {
     attachButtonPressEffect('#difficulty-menu button');
     attachButtonPressEffect('.header button');
     attachButtonPressEffect('#game-over button');
+    attachButtonPressEffect('#settings-modal button');
+    attachButtonPressEffect('#settings-trigger');
+
+    const audioToggle = document.getElementById('audio-toggle');
+    const volumeSlider = document.getElementById('volume-slider');
+
+    if (audioToggle && volumeSlider && window.soundManager) {
+        audioToggle.checked = soundManager.enabled;
+        volumeSlider.value = soundManager.volume;
+
+        audioToggle.addEventListener('change', (event) => {
+            soundManager.setEnabled(event.target.checked);
+        });
+
+        volumeSlider.addEventListener('input', (event) => {
+            soundManager.setVolume(parseFloat(event.target.value));
+        });
+    }
 });
+
+function openSettings() {
+    document.getElementById('settings-modal').classList.remove('hidden');
+}
+
+function closeSettings() {
+    document.getElementById('settings-modal').classList.add('hidden');
+}
