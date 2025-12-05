@@ -13,6 +13,7 @@
 <body>
 
     <div class="container">
+        <button id="settings-trigger" class="settings-btn" onclick="openSettings()">⚙️ Ajustes</button>
         <!-- Mode Selection Menu -->
         <div id="mode-menu" class="screen active">
             <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="logo">
@@ -64,8 +65,27 @@
                 </div>
             </div>
         </div>
+
+        <div id="settings-modal" class="modal hidden">
+            <div class="modal-content settings-content">
+                <h2>Audio</h2>
+                <div class="setting-row">
+                    <label for="audio-toggle">Sonido activado</label>
+                    <label class="switch">
+                        <input type="checkbox" id="audio-toggle" checked>
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <div class="setting-row">
+                    <label for="volume-slider">Volumen</label>
+                    <input type="range" id="volume-slider" min="0" max="1" step="0.05">
+                </div>
+                <button class="back-btn" onclick="closeSettings()">Cerrar</button>
+            </div>
+        </div>
     </div>
 
+    <script src="{{ url_for('static', filename='js/audio.js') }}"></script>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 
