@@ -1,15 +1,23 @@
-const CACHE_NAME = 'memory-app-cache-v1';
+const CACHE_NAME = 'memory-app-cache-v3';
 const OFFLINE_ASSETS = [
   '/',
   '/static/css/style.css',
   '/static/js/script.js',
+  '/static/js/audio.js',
+  '/static/audio/button.wav',
+  '/static/audio/flip.wav',
+  '/static/audio/match.wav',
   '/static/images/logo.png',
   '/static/manifest.json'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(OFFLINE_ASSETS))
+    caches.open(CACHE_NAME).then((cache) =>
+      Promise.all(
+        OFFLINE_ASSETS.map((asset) => cache.add(asset).catch(() => null))
+      )
+    )
   );
 });
 
