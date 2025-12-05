@@ -19,6 +19,21 @@ let currentDifficulty = 'easy';
 let cpuMemory = new Map();
 let cpuActive = false;
 
+function attachButtonPressEffect(selector) {
+    const buttons = document.querySelectorAll(selector);
+
+    buttons.forEach((button) => {
+        const removePress = () => button.classList.remove('button-press');
+
+        button.addEventListener('pointerdown', () => {
+            button.classList.add('button-press');
+        });
+
+        button.addEventListener('pointerup', removePress);
+        button.addEventListener('pointerleave', removePress);
+    });
+}
+
 function selectMode(mode) {
     currentMode = mode;
     document.getElementById('mode-menu').classList.add('hidden');
@@ -317,3 +332,10 @@ if ('serviceWorker' in navigator) {
         });
     });
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    attachButtonPressEffect('#mode-menu button');
+    attachButtonPressEffect('#difficulty-menu button');
+    attachButtonPressEffect('.header button');
+    attachButtonPressEffect('#game-over button');
+});
