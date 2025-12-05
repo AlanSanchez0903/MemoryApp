@@ -20,7 +20,7 @@
             <div class="mode-buttons">
                 <button onclick="selectMode(1)">Solo (Time Trial)</button>
                 <button onclick="selectMode(2)">2 Players (Turn based)</button>
-                <button onclick="selectMode(3)">Vs CPU (In progress)</button>
+                <button onclick="selectMode(3)">Vs CPU</button>
             </div>
         </div>
 
@@ -44,8 +44,10 @@
                 <button onclick="showMenu()" class="back-btn">Back</button>
                 <div id="timer-container" class="timer">Time: <span id="time">00:00</span></div>
                 <div id="scoreboard" class="scoreboard hidden">
-                    <div id="p1-box" class="player-box active-turn">P1: <span id="p1-score">0</span></div>
-                    <div id="p2-box" class="player-box">P2: <span id="p2-score">0</span></div>
+                    <div id="p1-box" class="player-box active-turn"><span id="p1-label">P1</span>: <span
+                            id="p1-score">0</span></div>
+                    <div id="p2-box" class="player-box"><span id="p2-label">P2</span>: <span
+                            id="p2-score">0</span></div>
                 </div>
             </div>
 
