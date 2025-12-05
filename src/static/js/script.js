@@ -24,6 +24,17 @@ function attachButtonPressEffect(selector) {
 
     buttons.forEach((button) => {
         const removePress = () => button.classList.remove('button-press');
+        const handleKeyDown = (event) => {
+            if (event.code === 'Space' || event.code === 'Enter') {
+                button.classList.add('button-press');
+            }
+        };
+
+        const handleKeyUp = (event) => {
+            if (event.code === 'Space' || event.code === 'Enter') {
+                removePress();
+            }
+        };
 
         button.addEventListener('pointerdown', () => {
             button.classList.add('button-press');
@@ -31,6 +42,9 @@ function attachButtonPressEffect(selector) {
 
         button.addEventListener('pointerup', removePress);
         button.addEventListener('pointerleave', removePress);
+        button.addEventListener('keydown', handleKeyDown);
+        button.addEventListener('keyup', handleKeyUp);
+        button.addEventListener('blur', removePress);
     });
 }
 
