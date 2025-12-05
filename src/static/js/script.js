@@ -84,7 +84,7 @@ function startGame(cardCount) {
         p2Score = 0;
         currentPlayer = 1;
         updateScoreUI();
-        setScoreboardLabels('P1', 'P2');
+        setScoreboardLabels('J1', 'J2');
     } else if (currentMode === 3) {
         document.getElementById('timer-container').classList.add('hidden');
         document.getElementById('scoreboard').classList.remove('hidden');
@@ -92,7 +92,7 @@ function startGame(cardCount) {
         p2Score = 0;
         currentPlayer = 1;
         updateScoreUI();
-        setScoreboardLabels('You', 'CPU');
+        setScoreboardLabels('Tú', 'CPU');
     }
 }
 
@@ -193,26 +193,26 @@ function endGame() {
 
     if (currentMode === 1) {
         const finalTime = document.getElementById('time').textContent;
-        gameOverTitle.textContent = "You Won!";
-        gameOverMsg.innerHTML = `Time: <span id="final-time">${finalTime}</span>`;
+        gameOverTitle.textContent = "¡Ganaste!";
+        gameOverMsg.innerHTML = `Tiempo: <span id="final-time">${finalTime}</span>`;
     } else if (currentMode === 2) {
         if (p1Score > p2Score) {
-            gameOverTitle.textContent = "Player 1 Wins!";
+            gameOverTitle.textContent = "¡Jugador 1 gana!";
         } else if (p2Score > p1Score) {
-            gameOverTitle.textContent = "Player 2 Wins!";
+            gameOverTitle.textContent = "¡Jugador 2 gana!";
         } else {
-            gameOverTitle.textContent = "It's a Draw!";
+            gameOverTitle.textContent = "¡Empate!";
         }
-        gameOverMsg.innerHTML = `P1: ${p1Score} - P2: ${p2Score}`;
+        gameOverMsg.innerHTML = `J1: ${p1Score} - J2: ${p2Score}`;
     } else if (currentMode === 3) {
         if (p1Score > p2Score) {
-            gameOverTitle.textContent = "You Win!";
+            gameOverTitle.textContent = "¡Ganaste!";
         } else if (p2Score > p1Score) {
-            gameOverTitle.textContent = "CPU Wins!";
+            gameOverTitle.textContent = "¡La CPU gana!";
         } else {
-            gameOverTitle.textContent = "It's a Draw!";
+            gameOverTitle.textContent = "¡Empate!";
         }
-        gameOverMsg.innerHTML = `You: ${p1Score} - CPU: ${p2Score}`;
+        gameOverMsg.innerHTML = `Tú: ${p1Score} - CPU: ${p2Score}`;
     }
 
     setTimeout(() => {
