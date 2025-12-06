@@ -82,6 +82,9 @@ function showModeMenu() {
 }
 
 function startGame(cardCount) {
+    clearInterval(gameInterval);
+    document.getElementById('time').textContent = '00:00';
+
     document.getElementById('difficulty-menu').classList.add('hidden');
     document.getElementById('game').classList.remove('hidden');
     document.getElementById('game-over').classList.add('hidden');
