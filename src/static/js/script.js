@@ -390,8 +390,6 @@ document.addEventListener('DOMContentLoaded', () => {
         sfxSlider.value = soundManager.sfxVolume;
         musicSelect.value = String(soundManager.currentMusicIndex ?? 0);
 
-        soundManager.ensureMusicPlaying();
-
         audioToggle.addEventListener('change', (event) => {
             soundManager.setEnabled(event.target.checked);
         });
