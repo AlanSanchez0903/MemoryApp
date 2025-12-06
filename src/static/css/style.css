@@ -238,8 +238,17 @@ button:focus-visible {
     gap: 12px;
 }
 
-#volume-slider {
+.settings-content input[type="range"],
+.settings-content select {
     flex: 1;
+}
+
+.settings-content select {
+    padding: 8px;
+    border-radius: 8px;
+    border: none;
+    background: #222;
+    color: var(--text-color);
 }
 
 .switch {
