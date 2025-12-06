@@ -81,8 +81,20 @@
                     </label>
                 </div>
                 <div class="setting-row">
-                    <label for="volume-slider">Volumen</label>
-                    <input type="range" id="volume-slider" min="0" max="1" step="0.05">
+                    <label for="music-select">Banda sonora</label>
+                    <select id="music-select">
+                        <option value="0">Banda sonora 1</option>
+                        <option value="1">Banda sonora 2</option>
+                        <option value="2">Banda sonora 3</option>
+                    </select>
+                </div>
+                <div class="setting-row">
+                    <label for="music-volume">Música</label>
+                    <input type="range" id="music-volume" min="0" max="1" step="0.05">
+                </div>
+                <div class="setting-row">
+                    <label for="sfx-volume">Efectos de sonido</label>
+                    <input type="range" id="sfx-volume" min="0" max="1" step="0.05">
                 </div>
                 <button class="back-btn" onclick="closeSettings()">Cerrar</button>
             </div>

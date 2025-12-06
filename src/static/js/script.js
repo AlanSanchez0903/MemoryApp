@@ -380,20 +380,39 @@ document.addEventListener('DOMContentLoaded', () => {
     attachButtonPressEffect('#settings-trigger');
 
     const audioToggle = document.getElementById('audio-toggle');
-    const volumeSlider = document.getElementById('volume-slider');
+    const musicSelect = document.getElementById('music-select');
+    const musicSlider = document.getElementById('music-volume');
+    const sfxSlider = document.getElementById('sfx-volume');
 
-    if (audioToggle && volumeSlider && window.soundManager) {
+    if (audioToggle && musicSlider && sfxSlider && musicSelect && window.soundManager) {
         audioToggle.checked = soundManager.enabled;
-        volumeSlider.value = soundManager.volume;
+        musicSlider.value = soundManager.musicVolume;
+        sfxSlider.value = soundManager.sfxVolume;
+        musicSelect.value = String(soundManager.currentMusicIndex ?? 0);
+
+        soundManager.ensureMusicPlaying();
 
         audioToggle.addEventListener('change', (event) => {
             soundManager.setEnabled(event.target.checked);
         });
 
-        volumeSlider.addEventListener('input', (event) => {
-            soundManager.setVolume(parseFloat(event.target.value));
+        musicSlider.addEventListener('input', (event) => {
+            soundManager.setMusicVolume(parseFloat(event.target.value));
+        });
+
+        sfxSlider.addEventListener('input', (event) => {
+            soundManager.setSfxVolume(parseFloat(event.target.value));
+        });
+
+        musicSelect.addEventListener('change', (event) => {
+            const newIndex = parseInt(event.target.value, 10);
+            if (!Number.isNaN(newIndex)) {
+                soundManager.selectMusic(newIndex);
+            }
         });
     }
+
+    document.addEventListener('pointerdown', () => soundManager.ensureMusicPlaying(), { once: true });
 });
 
 function openSettings() {

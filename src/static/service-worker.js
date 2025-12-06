@@ -1,4 +1,4 @@
-const CACHE_NAME = 'memory-app-cache-v3';
+const CACHE_NAME = 'memory-app-cache-v4';
 const OFFLINE_ASSETS = [
   '/',
   '/static/css/style.css',
@@ -7,6 +7,9 @@ const OFFLINE_ASSETS = [
   '/static/audio/button.wav',
   '/static/audio/flip.wav',
   '/static/audio/match.wav',
+  '/static/audio/music1.wav',
+  '/static/audio/music2.wav',
+  '/static/audio/music3.wav',
   '/static/images/logo.png',
   '/static/manifest.json'
 ];
