@@ -1,15 +1,17 @@
 class SoundManager {
     constructor() {
+        this.baseUrl = this.getBaseUrl();
+
         this.sounds = {
-            button: this.createAudio('/static/audio/button.wav'),
-            flip: this.createAudio('/static/audio/flip.wav'),
-            match: this.createAudio('/static/audio/match.wav'),
+            button: this.createAudio('static/audio/button.wav'),
+            flip: this.createAudio('static/audio/flip.wav'),
+            match: this.createAudio('static/audio/match.wav'),
         };
 
         this.musicTracks = [
-            this.createAudio('/static/audio/music1.wav', true),
-            this.createAudio('/static/audio/music2.wav', true),
-            this.createAudio('/static/audio/music3.wav', true),
+            this.createAudio('static/audio/music1.wav', true),
+            this.createAudio('static/audio/music2.wav', true),
+            this.createAudio('static/audio/music3.wav', true),
         ];
 
         this.enabled = JSON.parse(localStorage.getItem('audioEnabled') ?? 'true');
@@ -21,10 +23,29 @@ class SoundManager {
         this.applySfxVolume();
         this.applyMusicVolume();
         this.ensureMusicPlaying();
+        this.registerPlaybackUnlock();
+    }
+
+    getBaseUrl() {
+        try {
+            return new URL('./', window.location.href).href;
+        } catch (error) {
+            return '';
+        }
+    }
+
+    resolveAudioPath(relativePath) {
+        const normalizedPath = relativePath.replace(/^\//, '');
+        try {
+            return new URL(normalizedPath, this.baseUrl).href;
+        } catch (error) {
+            return normalizedPath;
+        }
     }
 
     createAudio(src, loop = false) {
-        const audio = new Audio(src);
+        const resolvedSrc = this.resolveAudioPath(src);
+        const audio = new Audio(resolvedSrc);
         audio.preload = 'auto';
         audio.loop = loop;
         return audio;
@@ -92,10 +113,15 @@ class SoundManager {
         });
     }
 
-    ensureMusicPlaying() {
+    ensureMusicPlaying(force = false) {
         if (!this.enabled || !this.music) return;
         this.music.currentTime = this.music.currentTime || 0;
         this.music.volume = this.musicVolume;
+
+        if (force && this.music.paused) {
+            this.music.load();
+        }
+
         this.music.play().catch(() => {});
     }
 
@@ -103,6 +129,25 @@ class SoundManager {
         if (this.music) {
             this.music.pause();
         }
+    }
+
+    registerPlaybackUnlock() {
+        const unlock = () => {
+            this.ensureMusicPlaying(true);
+            document.removeEventListener('pointerdown', unlock);
+            document.removeEventListener('touchstart', unlock);
+            document.removeEventListener('click', unlock);
+        };
+
+        document.addEventListener('pointerdown', unlock);
+        document.addEventListener('touchstart', unlock, { passive: true });
+        document.addEventListener('click', unlock);
+
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                this.ensureMusicPlaying();
+            }
+        });
     }
 }
 
