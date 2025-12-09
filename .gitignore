@@ -1,2 +1,2 @@
-MOBILE_GUIDE.md
-www/
+__pycache__/
+*.pyc
