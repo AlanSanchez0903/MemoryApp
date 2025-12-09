@@ -233,6 +233,7 @@ button:focus-visible {
     flex-direction: column;
     gap: 12px;
     margin-top: 16px;
+    align-items: center;
 }
 
 .confirm-actions {
@@ -240,10 +241,12 @@ button:focus-visible {
     flex-direction: column;
     gap: 12px;
     margin-top: 16px;
+    align-items: center;
 }
 
 .confirm-actions button {
-    max-width: none;
+    max-width: 300px;
+    width: 100%;
 }
 
 .settings-content {
