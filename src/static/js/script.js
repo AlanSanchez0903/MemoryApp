@@ -346,6 +346,18 @@ function endGame() {
     }, 500);
 }
 
+function restartGame() {
+    document.getElementById('game-over').classList.add('hidden');
+    const cardCount = totalPairs > 0 ? totalPairs * 2 : 12;
+    startGame(cardCount);
+}
+
+function returnToMenu() {
+    document.getElementById('game-over').classList.add('hidden');
+    resetTimer();
+    setScreen('mode');
+}
+
 function showMenu() {
     if (currentScreen === 'game') {
         promptExitConfirmation('difficulty');
