@@ -5,6 +5,7 @@ const icons = [
 
 let gameInterval;
 let startTime;
+let elapsedTime = 0;
 let flippedCards = [];
 let matchedPairs = 0;
 let totalPairs = 0;
@@ -20,6 +21,8 @@ let currentScreen = 'mode';
 let cpuMemory = new Map();
 let cpuActive = false;
 const FLIP_ANIMATION_MS = 500;
+
+let pendingExitTarget = null;
 
 function waitForFlipAnimation(cards, timeout = FLIP_ANIMATION_MS) {
     return new Promise((resolve) => {
@@ -81,8 +84,7 @@ function setScreen(screen, { pushHistory = true } = {}) {
     const target = screenMap[screen] || screenMap.mode;
 
     if (currentScreen === 'game' && screen !== 'game') {
-        clearInterval(gameInterval);
-        document.getElementById('time').textContent = '00:00';
+        resetTimer();
     }
 
     Object.values(screenMap).forEach((id) => {
@@ -119,8 +121,7 @@ function showModeMenu(pushHistory = true) {
 }
 
 function startGame(cardCount) {
-    clearInterval(gameInterval);
-    document.getElementById('time').textContent = '00:00';
+    resetTimer();
 
     document.getElementById('game-over').classList.add('hidden');
     setScreen('game');
@@ -269,13 +270,46 @@ function setScoreboardLabels(p1Label, p2Label) {
 }
 
 function startTimer() {
+    elapsedTime = 0;
     startTime = Date.now();
-    gameInterval = setInterval(() => {
-        const elapsed = Math.floor((Date.now() - startTime) / 1000);
-        const minutes = String(Math.floor(elapsed / 60)).padStart(2, '0');
-        const seconds = String(elapsed % 60).padStart(2, '0');
-        document.getElementById('time').textContent = `${minutes}:${seconds}`;
-    }, 1000);
+    gameInterval = setInterval(updateTimerDisplay, 1000);
+    updateTimerDisplay();
+}
+
+function pauseTimer() {
+    if (currentMode !== 1) return;
+    if (gameInterval) {
+        clearInterval(gameInterval);
+        gameInterval = null;
+    }
+    if (startTime) {
+        elapsedTime += Date.now() - startTime;
+        startTime = null;
+    }
+}
+
+function resumeTimer() {
+    if (currentMode !== 1) return;
+    if (gameInterval) return;
+    startTime = Date.now();
+    gameInterval = setInterval(updateTimerDisplay, 1000);
+    updateTimerDisplay();
+}
+
+function resetTimer() {
+    clearInterval(gameInterval);
+    gameInterval = null;
+    startTime = null;
+    elapsedTime = 0;
+    document.getElementById('time').textContent = '00:00';
+}
+
+function updateTimerDisplay() {
+    const totalElapsed = elapsedTime + (startTime ? Date.now() - startTime : 0);
+    const elapsedSeconds = Math.floor(totalElapsed / 1000);
+    const minutes = String(Math.floor(elapsedSeconds / 60)).padStart(2, '0');
+    const seconds = String(elapsedSeconds % 60).padStart(2, '0');
+    document.getElementById('time').textContent = `${minutes}:${seconds}`;
 }
 
 function endGame() {
@@ -313,10 +347,23 @@ function endGame() {
 }
 
 function showMenu() {
+    if (currentScreen === 'game') {
+        promptExitConfirmation('difficulty');
+        return;
+    }
+
     if (history.state?.screen === 'game') {
         history.back();
     } else {
         setScreen('difficulty');
+    }
+}
+
+function handleBackAction() {
+    if (currentScreen === 'game') {
+        promptExitConfirmation('difficulty');
+    } else {
+        showMenu();
     }
 }
 
@@ -417,6 +464,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.addEventListener('popstate', (event) => {
         const targetScreen = event.state?.screen || 'mode';
+        if (currentScreen === 'game' && targetScreen !== 'game') {
+            promptExitConfirmation(targetScreen);
+            history.pushState({ screen: 'game' }, '', '#game');
+            return;
+        }
+
         setScreen(targetScreen, { pushHistory: false });
     });
 
@@ -425,7 +478,14 @@ document.addEventListener('DOMContentLoaded', () => {
     attachButtonPressEffect('.header button');
     attachButtonPressEffect('#game-over button');
     attachButtonPressEffect('#settings-modal button');
+    attachButtonPressEffect('#exit-confirm button');
     attachButtonPressEffect('#settings-trigger');
+
+    const exitConfirm = document.getElementById('exit-confirm');
+    if (exitConfirm) {
+        document.getElementById('exit-confirm-yes')?.addEventListener('click', confirmExitLevel);
+        document.getElementById('exit-confirm-no')?.addEventListener('click', cancelExitLevel);
+    }
 
     const audioToggle = document.getElementById('audio-toggle');
     const musicSelect = document.getElementById('music-select');
@@ -467,4 +527,24 @@ function openSettings() {
 
 function closeSettings() {
     document.getElementById('settings-modal').classList.add('hidden');
+}
+
+function promptExitConfirmation(targetScreen) {
+    pendingExitTarget = targetScreen;
+    pauseTimer();
+    document.getElementById('exit-confirm').classList.remove('hidden');
+}
+
+function confirmExitLevel() {
+    const target = pendingExitTarget || 'difficulty';
+    pendingExitTarget = null;
+    document.getElementById('exit-confirm').classList.add('hidden');
+    resetTimer();
+    setScreen(target);
+}
+
+function cancelExitLevel() {
+    pendingExitTarget = null;
+    document.getElementById('exit-confirm').classList.add('hidden');
+    resumeTimer();
 }
