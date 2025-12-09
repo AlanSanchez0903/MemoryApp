@@ -44,7 +44,7 @@
         <div id="game" class="screen hidden">
             <div class="header">
                 <div class="controls-row">
-                    <button onclick="showMenu()" class="back-btn">Atrás</button>
+                    <button onclick="handleBackAction()" class="back-btn">Atrás</button>
                 </div>
                 <div class="status-row">
                     <div id="timer-container" class="timer">Tiempo: <span id="time">00:00</span></div>
@@ -66,6 +66,17 @@
                     <h2 id="game-over-title">¡Ganaste!</h2>
                     <p id="game-over-msg">Tiempo: <span id="final-time">00:00</span></p>
                     <button onclick="showMenu()">Jugar de nuevo</button>
+                </div>
+            </div>
+
+            <div id="exit-confirm" class="modal hidden">
+                <div class="modal-content">
+                    <h2>¿Salir del nivel?</h2>
+                    <p>Perderás el progreso de esta partida.</p>
+                    <div class="confirm-actions">
+                        <button id="exit-confirm-yes">Salir del nivel</button>
+                        <button id="exit-confirm-no" class="back-btn">Seguir jugando</button>
+                    </div>
                 </div>
             </div>
         </div>

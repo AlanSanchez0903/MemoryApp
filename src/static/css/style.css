@@ -223,6 +223,17 @@ button:focus-visible {
     text-align: center;
 }
 
+.confirm-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.confirm-actions button {
+    max-width: none;
+}
+
 .settings-content {
     min-width: min(420px, 90vw);
     text-align: left;
