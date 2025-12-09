@@ -19,7 +19,7 @@ let currentDifficulty = 'easy';
 let currentScreen = 'mode';
 
 let cpuMemory = new Map();
-let cpuActive = false;
+let opponentActive = false;
 const FLIP_ANIMATION_MS = 500;
 
 let pendingExitTarget = null;
@@ -141,7 +141,7 @@ function startGame(cardCount) {
     flippedCards = [];
     isLocked = false;
     cpuMemory.clear();
-    cpuActive = false;
+    opponentActive = false;
 
     // Generate deck
     let deck = icons.slice(0, totalPairs);
@@ -149,10 +149,11 @@ function startGame(cardCount) {
     deck.sort(() => Math.random() - 0.5); // Shuffle
 
     // Create cards
-    deck.forEach(icon => {
+    deck.forEach((icon, index) => {
         const card = document.createElement('div');
         card.classList.add('card');
         card.dataset.icon = icon;
+        card.dataset.index = String(index);
 
         card.innerHTML = `
             <div class="card-face card-back">?</div>
@@ -184,12 +185,20 @@ function startGame(cardCount) {
         currentPlayer = 1;
         updateScoreUI();
         setScoreboardLabels('Tú', 'CPU');
+    } else if (currentMode === 4) {
+        document.getElementById('timer-container').classList.add('hidden');
+        document.getElementById('scoreboard').classList.remove('hidden');
+        p1Score = 0;
+        p2Score = 0;
+        currentPlayer = 1;
+        updateScoreUI();
+        setScoreboardLabels('Tú', 'IA');
     }
 }
 
 function flipCard(card) {
     if (isLocked || card.classList.contains('flipped') || card.classList.contains('matched')) return;
-    if (currentMode === 3 && currentPlayer === 2 && !cpuActive) return;
+    if ((currentMode === 3 || currentMode === 4) && currentPlayer === 2 && !opponentActive) return;
 
     card.classList.add('flipped');
     if (window.soundManager) soundManager.play('flip');
@@ -218,12 +227,13 @@ function checkMatch() {
             if (currentPlayer === 1) p1Score++;
             else p2Score++;
             updateScoreUI();
-        } else if (currentMode === 3) {
+        } else if (currentMode === 3 || currentMode === 4) {
             if (currentPlayer === 1) p1Score++;
             else p2Score++;
             updateScoreUI();
             if (currentPlayer === 2 && matchedPairs !== totalPairs) {
-                setTimeout(cpuTakeTurn, 500);
+                const opponentTurn = currentMode === 3 ? cpuTakeTurn : aiTakeTurn;
+                setTimeout(opponentTurn, 500);
             }
         }
 
@@ -240,11 +250,12 @@ function checkMatch() {
             if (currentMode === 2) {
                 currentPlayer = currentPlayer === 1 ? 2 : 1;
                 updateScoreUI();
-            } else if (currentMode === 3) {
+            } else if (currentMode === 3 || currentMode === 4) {
                 currentPlayer = currentPlayer === 1 ? 2 : 1;
                 updateScoreUI();
                 if (currentPlayer === 2) {
-                    setTimeout(cpuTakeTurn, 500);
+                    const opponentTurn = currentMode === 3 ? cpuTakeTurn : aiTakeTurn;
+                    setTimeout(opponentTurn, 500);
                 }
             }
         }, 1000);
@@ -339,6 +350,15 @@ function endGame() {
             gameOverTitle.textContent = "¡Empate!";
         }
         gameOverMsg.innerHTML = `Tú: ${p1Score} - CPU: ${p2Score}`;
+    } else if (currentMode === 4) {
+        if (p1Score > p2Score) {
+            gameOverTitle.textContent = "¡Ganaste!";
+        } else if (p2Score > p1Score) {
+            gameOverTitle.textContent = "¡La IA gana!";
+        } else {
+            gameOverTitle.textContent = "¡Empate!";
+        }
+        gameOverMsg.innerHTML = `Tú: ${p1Score} - IA: ${p2Score}`;
     }
 
     setTimeout(() => {
@@ -394,14 +414,14 @@ function rememberCard(card) {
     cpuMemory.get(icon).add(card);
 }
 
-function cpuTakeTurn() {
+function cpuTakeTurn(forceSmart = false) {
     if (matchedPairs === totalPairs) return;
-    cpuActive = true;
+    opponentActive = true;
     isLocked = false;
 
-    const [firstCard, secondCard] = pickCpuCards();
+    const [firstCard, secondCard] = pickCpuCards(forceSmart);
     if (!firstCard || !secondCard) {
-        cpuActive = false;
+        opponentActive = false;
         return;
     }
 
@@ -409,13 +429,19 @@ function cpuTakeTurn() {
         flipCard(firstCard);
         setTimeout(() => {
             flipCard(secondCard);
-            cpuActive = false;
+            opponentActive = false;
         }, 700);
     }, 600);
 }
 
-function pickCpuCards() {
-    const knowledgeChance = currentDifficulty === 'easy' ? 0.4 : currentDifficulty === 'medium' ? 0.7 : 1;
+function pickCpuCards(forceSmart = false) {
+    const knowledgeChance = forceSmart
+        ? 1
+        : currentDifficulty === 'easy'
+            ? 0.4
+            : currentDifficulty === 'medium'
+                ? 0.7
+                : 1;
     const availableCards = Array.from(document.querySelectorAll('.card')).filter(card => !card.classList.contains('matched'));
 
     const knownPairs = [];
@@ -460,6 +486,98 @@ function pickCpuCards() {
     }
 
     return [firstCard, secondCard];
+}
+
+async function aiTakeTurn() {
+    if (matchedPairs === totalPairs) return;
+    opponentActive = true;
+    isLocked = false;
+
+    const suggestedIndexes = await requestAiMove();
+    const suggestedCards = mapIndexesToCards(suggestedIndexes);
+    const fallbackCards = pickCpuCards(true);
+    const [firstCard, secondCard] = suggestedCards.length === 2 ? suggestedCards : fallbackCards;
+
+    if (!firstCard || !secondCard) {
+        opponentActive = false;
+        return;
+    }
+
+    setTimeout(() => {
+        flipCard(firstCard);
+        setTimeout(() => {
+            flipCard(secondCard);
+            opponentActive = false;
+        }, 700);
+    }, 600);
+}
+
+async function requestAiMove() {
+    if (!window.aiConfig?.apiEnabled) return [];
+
+    try {
+        const response = await fetch('/api/ai-move', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ state: buildAiState() }),
+        });
+
+        if (!response.ok) {
+            return [];
+        }
+
+        const payload = await response.json();
+        if (Array.isArray(payload.cards) && payload.cards.length === 2) {
+            return payload.cards.map((value) => parseInt(value, 10)).filter((value) => !Number.isNaN(value));
+        }
+    } catch (error) {
+        console.warn('Error requesting AI move, using fallback strategy.', error);
+    }
+
+    return [];
+}
+
+function buildAiState() {
+    const cards = Array.from(document.querySelectorAll('.card'));
+    return {
+        difficulty: currentDifficulty,
+        totalPairs,
+        scores: { player: p1Score, opponent: p2Score },
+        board: cards.map((card) => ({
+            index: parseInt(card.dataset.index, 10),
+            status: card.classList.contains('matched')
+                ? 'matched'
+                : card.classList.contains('flipped')
+                    ? 'flipped'
+                    : 'hidden',
+            icon: card.classList.contains('matched') || card.classList.contains('flipped') ? card.dataset.icon : null,
+        })),
+        memory: serializeCpuMemory(),
+    };
+}
+
+function serializeCpuMemory() {
+    const memory = {};
+    cpuMemory.forEach((cards, icon) => {
+        const indexes = Array.from(cards)
+            .map((card) => parseInt(card.dataset.index, 10))
+            .filter((value) => !Number.isNaN(value));
+        if (indexes.length) {
+            memory[icon] = indexes;
+        }
+    });
+    return memory;
+}
+
+function mapIndexesToCards(indexes) {
+    if (!Array.isArray(indexes)) return [];
+    const cardMap = new Map(
+        Array.from(document.querySelectorAll('.card')).map((card) => [parseInt(card.dataset.index, 10), card]),
+    );
+
+    return indexes
+        .map((index) => cardMap.get(index))
+        .filter((card) => card && !card.classList.contains('matched') && !card.classList.contains('flipped'));
 }
 
 if ('serviceWorker' in navigator) {

@@ -23,6 +23,7 @@
                 <button onclick="selectMode(1)">Individual (contrarreloj)</button>
                 <button onclick="selectMode(2)">2 jugadores (por turnos)</button>
                 <button onclick="selectMode(3)">Contra la CPU</button>
+                <button onclick="selectMode(4)">Contra la IA</button>
             </div>
         </div>
 
@@ -116,6 +117,12 @@
     </div>
 
     <script src="{{ url_for('static', filename='js/audio.js') }}"></script>
+    <script>
+        window.aiConfig = {
+            apiEnabled: {{ 'true' if ai_enabled else 'false' }},
+            model: "{{ ai_model or '' }}",
+        };
+    </script>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 
