@@ -24,6 +24,46 @@ const FLIP_ANIMATION_MS = 500;
 
 let pendingExitTarget = null;
 
+const MEMORY_RANKS = {
+    elephant: {
+        emoji: '🐘',
+        title: 'Memoria de elefante',
+        note: 'Lo recuerdas todo, hasta lo que no quieres.',
+    },
+    dolphin: {
+        emoji: '🐬',
+        title: 'Memoria de delfín',
+        note: 'Nadas entre las cartas como si fueran tu océano.',
+    },
+    turtle: {
+        emoji: '🐢',
+        title: 'Memoria de tortuga',
+        note: 'Llegas con calma, pero llegas seguro.',
+    },
+    mouse: {
+        emoji: '🐭',
+        title: 'Memoria de ratón',
+        note: 'Tus recuerdos asoman, pero se esconden rápido.',
+    },
+    goldfish: {
+        emoji: '🐠',
+        title: 'Memoria de pez dorado',
+        note: 'Cada carta es una sorpresa nueva… ¡otra vez!',
+    },
+};
+
+const TIME_THRESHOLDS = {
+    easy: [35, 55, 80],
+    medium: [70, 110, 150],
+    hard: [110, 170, 230],
+};
+
+const SCORE_THRESHOLDS = {
+    easy: [0.8, 0.6, 0.4],
+    medium: [0.75, 0.55, 0.4],
+    hard: [0.7, 0.5, 0.35],
+};
+
 function waitForFlipAnimation(cards, timeout = FLIP_ANIMATION_MS) {
     return new Promise((resolve) => {
         let remaining = cards.length;
@@ -124,6 +164,7 @@ function startGame(cardCount) {
     resetTimer();
 
     document.getElementById('game-over').classList.add('hidden');
+    resetMemoryRank();
     setScreen('game');
 
     const board = document.getElementById('board');
@@ -287,6 +328,11 @@ function startTimer() {
     updateTimerDisplay();
 }
 
+function getElapsedSeconds() {
+    const totalElapsed = elapsedTime + (startTime ? Date.now() - startTime : 0);
+    return Math.floor(totalElapsed / 1000);
+}
+
 function pauseTimer() {
     if (currentMode !== 1) return;
     if (gameInterval) {
@@ -321,6 +367,50 @@ function updateTimerDisplay() {
     const minutes = String(Math.floor(elapsedSeconds / 60)).padStart(2, '0');
     const seconds = String(elapsedSeconds % 60).padStart(2, '0');
     document.getElementById('time').textContent = `${minutes}:${seconds}`;
+}
+
+function resetMemoryRank() {
+    const memoryRank = document.getElementById('memory-rank');
+    if (memoryRank) {
+        memoryRank.textContent = '';
+        memoryRank.classList.add('hidden');
+    }
+}
+
+function calculateMemoryRank() {
+    if (!totalPairs) return null;
+
+    if (currentMode === 1) {
+        const thresholds = TIME_THRESHOLDS[currentDifficulty] || TIME_THRESHOLDS.medium;
+        const seconds = getElapsedSeconds();
+
+        let tier;
+        if (seconds <= thresholds[0]) tier = 'elephant';
+        else if (seconds <= thresholds[1]) tier = 'dolphin';
+        else if (seconds <= thresholds[2]) tier = 'turtle';
+        else if (seconds >= thresholds[2] + 60) tier = 'goldfish';
+        else tier = 'mouse';
+
+        return MEMORY_RANKS[tier];
+    }
+
+    const thresholds = SCORE_THRESHOLDS[currentDifficulty] || SCORE_THRESHOLDS.medium;
+    const ratio = totalPairs ? p1Score / totalPairs : 0;
+
+    let tier;
+    if (ratio >= thresholds[0]) tier = 'elephant';
+    else if (ratio >= thresholds[1]) tier = 'dolphin';
+    else if (ratio >= thresholds[2]) tier = 'turtle';
+    else if (ratio <= 0.2) tier = 'goldfish';
+    else tier = 'mouse';
+
+    return MEMORY_RANKS[tier];
+}
+
+function formatMemoryRank() {
+    const rank = calculateMemoryRank();
+    if (!rank) return '';
+    return `${rank.emoji} ${rank.title}: ${rank.note}`;
 }
 
 function endGame() {
@@ -359,6 +449,13 @@ function endGame() {
             gameOverTitle.textContent = "¡Empate!";
         }
         gameOverMsg.innerHTML = `Tú: ${p1Score} - IA: ${p2Score}`;
+    }
+
+    const memoryRank = document.getElementById('memory-rank');
+    if (memoryRank) {
+        const message = formatMemoryRank();
+        memoryRank.textContent = message;
+        memoryRank.classList.toggle('hidden', !message);
     }
 
     setTimeout(() => {
