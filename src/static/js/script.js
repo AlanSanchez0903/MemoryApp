@@ -15,6 +15,7 @@ let currentPlayer = 1;
 let p1Score = 0;
 let p2Score = 0;
 let currentDifficulty = 'easy';
+let currentScreen = 'mode';
 
 let cpuMemory = new Map();
 let cpuActive = false;
@@ -70,24 +71,59 @@ function attachButtonPressEffect(selector) {
     });
 }
 
-function selectMode(mode) {
-    currentMode = mode;
-    document.getElementById('mode-menu').classList.add('hidden');
-    document.getElementById('difficulty-menu').classList.remove('hidden');
+function setScreen(screen, { pushHistory = true } = {}) {
+    const screenMap = {
+        mode: 'mode-menu',
+        difficulty: 'difficulty-menu',
+        game: 'game'
+    };
+
+    const target = screenMap[screen] || screenMap.mode;
+
+    if (currentScreen === 'game' && screen !== 'game') {
+        clearInterval(gameInterval);
+        document.getElementById('time').textContent = '00:00';
+    }
+
+    Object.values(screenMap).forEach((id) => {
+        const element = document.getElementById(id);
+        if (!element) return;
+
+        if (id === target) {
+            element.classList.remove('hidden');
+            element.classList.add('active');
+        } else {
+            element.classList.add('hidden');
+            element.classList.remove('active');
+        }
+    });
+
+    currentScreen = screen;
+
+    if (pushHistory) {
+        history.pushState({ screen }, '', `#${screen}`);
+    }
 }
 
-function showModeMenu() {
-    document.getElementById('difficulty-menu').classList.add('hidden');
-    document.getElementById('mode-menu').classList.remove('hidden');
+function selectMode(mode) {
+    currentMode = mode;
+    setScreen('difficulty');
+}
+
+function showModeMenu(pushHistory = true) {
+    if (pushHistory && history.state?.screen === 'difficulty') {
+        history.back();
+    } else {
+        setScreen('mode', { pushHistory });
+    }
 }
 
 function startGame(cardCount) {
     clearInterval(gameInterval);
     document.getElementById('time').textContent = '00:00';
 
-    document.getElementById('difficulty-menu').classList.add('hidden');
-    document.getElementById('game').classList.remove('hidden');
     document.getElementById('game-over').classList.add('hidden');
+    setScreen('game');
 
     const board = document.getElementById('board');
     board.innerHTML = '';
@@ -277,10 +313,11 @@ function endGame() {
 }
 
 function showMenu() {
-    clearInterval(gameInterval);
-    document.getElementById('game').classList.add('hidden');
-    document.getElementById('difficulty-menu').classList.remove('hidden');
-    document.getElementById('time').textContent = '00:00';
+    if (history.state?.screen === 'game') {
+        history.back();
+    } else {
+        setScreen('difficulty');
+    }
 }
 
 function getDifficulty(cardCount) {
@@ -375,6 +412,14 @@ if ('serviceWorker' in navigator) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    history.replaceState({ screen: 'mode' }, '', '#mode');
+    setScreen('mode', { pushHistory: false });
+
+    window.addEventListener('popstate', (event) => {
+        const targetScreen = event.state?.screen || 'mode';
+        setScreen(targetScreen, { pushHistory: false });
+    });
+
     attachButtonPressEffect('#mode-menu button');
     attachButtonPressEffect('#difficulty-menu button');
     attachButtonPressEffect('.header button');
